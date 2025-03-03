@@ -36,12 +36,40 @@ btn_regle = tk.Button(root, text="Règles", command=ouvrir_page_regle)
 btn_regle.place(x=250, y=170)
 
 
+import random as rd
 def code_aleatoire():
     code=[]
     couleurs=['red','blue','green','magenta','yellow','orange']
     for i in range(4):
         code+=[couleurs[rd.randint(0,5)]]
     return code
-print(code_aleatoire())
+
+def jeu_solo(tour): #on initialise la fonction qui permet au joueur de deviner un code
+    reponse=code_aleatoire()
+    print(reponse)
+    historique_guess=[]
+    historique_match=[]
+    for i in range(tour): #le joueur a "10 vies"
+        guess=[]
+        for i in range(4): 
+            guess+=[input('Choisissez une couleur parmis : red ,blue ,green ,magenta ,yellow ,orange: ')]
+        historique_guess+=[guess]
+        match=[] #liste correspondant au test de chacune des couleurs
+        for indice in range(len(guess)):
+            if guess[indice]==reponse[indice]:
+                match+=["green"]
+            elif guess[indice] in reponse:
+                match+=["yellow"]
+            else:
+                match+=["red"]
+        historique_match+=[match]
+        if match==["green","green","green","green"]:
+            print('Gagné')
+            return('Gagné')
+        print(match)
+    print('Perdu')
+    return('Perdu')
+        
+jeu_solo(10)
         
 root.mainloop()
