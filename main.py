@@ -91,8 +91,6 @@ def gencode():
     return [rd.choice(colors) for i in range(4)]
 
 
-root.mainloop()
-
 '''def jeu_solo(tour): #on initialise la fonction qui permet au joueur de deviner un code
     reponse=code_aleatoire()
     print(reponse)
