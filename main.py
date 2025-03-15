@@ -118,5 +118,16 @@ def gencode():
     return('Perdu')
         
 jeu_solo(10)'''
+
+# MODE 2 JOUEURS
+def deux_joueurs(colors):#la fonction permet au premier joueur de créer un code
+    while True:
+        code = input('Choisissez 4 couleur parmis : red ,blue ,green ,magenta ,yellow ,orange: ').split()
+        if len(code) != 4:
+            print("Choisissez 4 couleur !")
+        elif any(color not in colors for color in code):
+            print("couleur invalid")
+        else:
+            return  code
         
 root.mainloop()
