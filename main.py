@@ -213,39 +213,7 @@ def gencode():
         
 jeu_solo(10)'''
 
-def generer_combinaison():
-    #Génère une combinaison secrète avec des couleurs parmi une liste. 
-    couleurs = ["red" ,"blue" ,"green" ,"magenta" ,"yellow" ,"orange"]
-    return random.choices(couleurs, k=4)  # cela permet les repetitions et genere automatiquement une combinaison de 4 couleurs
 
-def verifier_combinaison(secret, tentative):
-    #Compare la tentative du joueur avec la combinaison secrète. 
-    rouges = sum([s == t for s, t in zip(secret, tentative)])  #bien placés
-    blancs = sum([min(secret.count(c), tentative.count(c)) for c in set(tentative)]) - rouges  #mal placés
-    return rouges, blancs
-
-#Initialisation
-secret = generer_combinaison()
-essais_max = 10
-gagne = False
-print("Trouvez la combinaison de 4 couleurs.")
-
-for essai in range(1, essais_max + 1):
-    #Demande à l'utilisateur une proposition
-    tentative = input(f"Essai {essai}/{essais_max} - Entrez 4 couleurs : ").split()
-
-    if len(tentative) != 4:
-        print("Veuillez entrer 4 couleurs.")
-        continue
-
-    rouges, blancs = verifier_combinaison(secret, tentative)
-    print(f"Résultat : {rouges} 🔴 (bien placés), {blancs} ⚪  (mal placés)")
-
-    if rouges == 4:
-        print(f"Bien joué ! Vous avez trouvé la combinaison {secret} en {essai} essais.")
-        gagne = True
-        break
-print(secret)
 
 # MODE 2 JOUEURS
 def deux_joueurs(colors):#la fonction permet au premier joueur de créer un code
