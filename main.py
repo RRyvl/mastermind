@@ -67,11 +67,17 @@ def open_game(mode):
     attempts = []
     for i in range(10):
         row = []
-        for j in range(4):
+        for j in range(5):
             cell = tk.Label(grid_frame, bg="white", width=8, height=4, borderwidth=2, relief="solid")
             cell.grid(row=i, column=j, padx=5, pady=5)
             row.append(cell)
         attempts.append(row)
+    for i in range(10):
+        row = []
+        cell = tk.Label(grid_frame, bg="gray", width=8, height=4, borderwidth=2, relief="solid")
+        cell.grid(row=i, column=j, padx=5, pady=5)
+        row.append(cell)
+    attempts.append(row)
 
     # Zone d'entrée des couleurs
     entry_frame = tk.Frame(main_frame)
