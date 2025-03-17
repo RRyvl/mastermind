@@ -39,16 +39,7 @@ def quitter():
     root.destroy()
 
 
-'''COLORS = ["red", "blue", "yellow", "green", "orange", "purple"]
-
-def open_page(title):
-    """Ouvre une nouvelle fenêtre avec un titre et un bouton retour."""
-    new_window = Toplevel(root)
-    new_window.title(title)
-    new_window.geometry("800x600")
-
-    btn_return = Button(new_window, text="Retour Menu", command=new_window.destroy, height=2, width=10)
-    btn_return.pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
+COLORS = ["red", "blue", "yellow", "green", "orange", "purple"]
 
 def open_game(mode):
     """Ouvre la fenêtre de jeu avec grille et sélection de couleurs."""
@@ -127,7 +118,7 @@ def open_game(mode):
     btn_valider.pack(pady=10)
 
     # Bouton Retour Menu
-    Button(game_window, text="Retour Menu", command=game_window.destroy).pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)'''
+    Button(game_window, text="Retour Menu", command=game_window.destroy).pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
 
 
 
