@@ -121,9 +121,9 @@ def open_game(mode):
     Button(game_window, text="Retour Menu", command=game_window.destroy).pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
 
 
+##################################################################################
 
-
-ligne_actuelle=0
+'''ligne_actuelle=0
 colors=['red','blue','green','magenta','yellow','orange']
 def changer_couleur(bouton,i,j):
     global colors
@@ -176,7 +176,7 @@ def gencode():
     return [rd.choice(colors) for i in range(4)]
 
 
-'''def jeu_solo(tour): #on initialise la fonction qui permet au joueur de deviner un code
+def jeu_solo(tour): #on initialise la fonction qui permet au joueur de deviner un code
     reponse=code_aleatoire()
     print(reponse)
     historique_guess=[]
@@ -207,7 +207,7 @@ jeu_solo(10)'''
 
 
 # MODE 2 JOUEURS
-def deux_joueurs(colors):#la fonction permet au premier joueur de créer un code
+'''def deux_joueurs(colors):#la fonction permet au premier joueur de créer un code
     while True:
         code = input('Choisissez 4 couleur parmis : red ,blue ,green ,magenta ,yellow ,orange: ').split()
         if len(code) != 4:
@@ -215,6 +215,6 @@ def deux_joueurs(colors):#la fonction permet au premier joueur de créer un code
         elif any(color not in colors for color in code):
             print("couleur invalid")
         else:
-            return  code
+            return  code'''
         
 root.mainloop()
