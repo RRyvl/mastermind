@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import Toplevel, Button, messagebox, Frame
+import random as rd 
 
 # Création de la fenêtre principale
 root = tk.Tk()
@@ -40,6 +41,19 @@ btn_regles.pack(side=tk.RIGHT, anchor="se")
 #1 joueur
 
 COLORS = ["red", "blue", "yellow", "green", "orange", "purple"]
+def gencode ():
+    return [rd.choice(COLORS) for i in range (4)]
+code = gencode()
+
+def open_page(title):
+    """Ouvre une nouvelle fenêtre avec un titre et un bouton retour."""
+    new_window = Toplevel(root)
+    new_window.title(title)
+    new_window.geometry("800x600")
+
+    btn_return = Button(new_window, text="Retour Menu", command=new_window.destroy, height=2, width=10)
+    btn_return.pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
+
 
 
 def open_game(mode):
@@ -62,17 +76,11 @@ def open_game(mode):
     attempts = []
     for i in range(10):
         row = []
-        for j in range(5):
+        for j in range(4):
             cell = tk.Label(grid_frame, bg="white", width=8, height=4, borderwidth=2, relief="solid")
             cell.grid(row=i, column=j, padx=5, pady=5)
             row.append(cell)
         attempts.append(row)
-    for i in range(10):
-        row = []
-        cell = tk.Label(grid_frame, bg="gray", width=8, height=4, borderwidth=2, relief="solid")
-        cell.grid(row=i, column=j, padx=5, pady=5)
-        row.append(cell)
-    attempts.append(row)
 
     # Zone d'entrée des couleurs
     entry_frame = tk.Frame(main_frame)
@@ -82,7 +90,7 @@ def open_game(mode):
 
     selection_couleur = []
     ligne_actuelle = 0
-
+    
     def choisir_couleur(color):
         if len(selection_couleur) < 4:
             selection_couleur.append(color)
@@ -92,19 +100,37 @@ def open_game(mode):
         for i in range(4):
             color = selection_couleur[i] if i < len(selection_couleur) else "white"
             color_display[i].config(bg=color)
-
+    
     def validate_combination():
         nonlocal ligne_actuelle 
+        global code
         if len(selection_couleur) == 4:
             for i, color in enumerate(selection_couleur):
                 attempts[ligne_actuelle ][i].config(bg=color)
-            selection_couleur.clear()
-            update_color_display()
-            ligne_actuelle  += 1
+
         else:
             messagebox.showerror("Erreur", "Veuillez sélectionner 4 couleurs")
+        if selection_couleur != code and ligne_actuelle+1 == 10 :
+            messagebox.showwarning("Perdu", "Vous avez perdu")
+            quitter()
+        if selection_couleur == code :
+            messagebox.showwarning("Gagné", "Vous avez gagné")
+        if selection_couleur != code and ligne_actuelle+1<10:
+            for color in matchcombi(selection_couleur,code):
+                pass
 
+        selection_couleur.clear()
+        update_color_display()
+        ligne_actuelle  += 1
 
+    def matchcombi(guess,code):
+        result=[]
+        for couleur in range(len(guess)):
+            if guess[couleur]==code[couleur]:
+                result+=['red']
+            elif guess[couleur] in code:
+                result+=['grey']
+        return result
     # Affichage des 4 couleurs sélectionnées
     color_display = [tk.Label(entry_frame, bg="white", width=8, height=4, borderwidth=2, relief="solid") for _ in range(4)]
     for lbl in color_display:
@@ -129,10 +155,6 @@ def quitter():
     """Ferme l'application."""
     root.destroy()
 
+
 # Lancement de l'application
 root.mainloop()
-
-
-
-        
-
