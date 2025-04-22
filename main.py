@@ -61,6 +61,7 @@ def open_game(mode):
     game_window = Toplevel(root)
     game_window.title(f"MasterMind - {mode}")
     game_window.geometry("800x600")
+    code = [rd.choice(COLORS) for _ in range(4)]
 
     btn_return = Button(game_window, text="Retour Menu", command=game_window.destroy, height=2, width=10)
     btn_return.pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
@@ -82,6 +83,26 @@ def open_game(mode):
             row.append(cell)
         attempts.append(row)
 
+     # Zone de feedback (affichage des indices)
+    feedback_frame = tk.Frame(main_frame)
+    feedback_frame.pack(side=tk.LEFT, padx=20)
+
+    # Configuration de la grille de feedback pour que les cellules s'étendent
+    for i in range(10):
+        feedback_frame.grid_rowconfigure(i, weight=1)
+    for j in range(4):
+        feedback_frame.grid_columnconfigure(j, weight=1)
+
+    # Création d'une grille de feedback pour 10 lignes et 4 colonnes (indices)
+    feedback_labels = []
+    for i in range(10):
+        row_feedback = []
+        for j in range(4):
+            cell = tk.Label(feedback_frame, bg="white", width=4, height=2, borderwidth=1, relief="solid")
+            cell.grid(row=i, column=j, padx=2, pady=2, sticky="nsew")
+            row_feedback.append(cell)
+        feedback_labels.append(row_feedback)
+
     # Zone d'entrée des couleurs
     entry_frame = tk.Frame(main_frame)
     entry_frame.pack(side=tk.RIGHT, padx=20)
@@ -90,6 +111,7 @@ def open_game(mode):
 
     selection_couleur = []
     ligne_actuelle = 0
+    historique = []
     
     def choisir_couleur(color):
         if len(selection_couleur) < 4:
@@ -102,35 +124,127 @@ def open_game(mode):
             color_display[i].config(bg=color)
     
     def validate_combination():
-        nonlocal ligne_actuelle 
-        global code
-        if len(selection_couleur) == 4:
-            for i, color in enumerate(selection_couleur):
-                attempts[ligne_actuelle ][i].config(bg=color)
-
-        else:
+        nonlocal code
+        nonlocal ligne_actuelle
+        
+        if len(selection_couleur) != 4:
             messagebox.showerror("Erreur", "Veuillez sélectionner 4 couleurs")
-        if selection_couleur != code and ligne_actuelle+1 == 10 :
+            return  # On sort si la combinaison n'est pas complète
+
+        # Affiche la combinaison dans la grille
+        for i, color in enumerate(selection_couleur):
+            attempts[ligne_actuelle][i].config(bg=color)
+
+        # Récupère et affiche le feedback
+        feedback = matchcombi(selection_couleur, code)
+        display_feedback(ligne_actuelle, feedback)
+        historique.append((selection_couleur.copy(), feedback))
+
+        if selection_couleur == code:
+            messagebox.showinfo("Gagné", "Vous avez gagné")
+            quitter()  # ou proposer une nouvelle partie
+        elif ligne_actuelle + 1 == 10:
             messagebox.showwarning("Perdu", "Vous avez perdu")
             quitter()
-        if selection_couleur == code :
-            messagebox.showwarning("Gagné", "Vous avez gagné")
-        if selection_couleur != code and ligne_actuelle+1<10:
-            for color in matchcombi(selection_couleur,code):
-                pass
+        else:
+            # Passage à la prochaine tentative
+            selection_couleur.clear()
+            update_color_display()
+            ligne_actuelle += 1
 
+    def undo():
+        nonlocal ligne_actuelle
+        nonlocal attempts
+        if ligne_actuelle>=0:
+            ligne_actuelle-=1
+            for cellule in attempts[ligne_actuelle]:
+                cellule.config(bg='white')
+            for cellule in feedback_labels[ligne_actuelle]:
+                cellule.config(bg='white')
+    def help():
+        nonlocal selection_couleur
+        nonlocal code
+
+        if ligne_actuelle == 0:
+            messagebox.showinfo("Info", "Faites une première tentative avant d'utiliser l'aide.")
+            return
         selection_couleur.clear()
-        update_color_display()
-        ligne_actuelle  += 1
 
-    def matchcombi(guess,code):
-        result=[]
-        for couleur in range(len(guess)):
-            if guess[couleur]==code[couleur]:
-                result+=['red']
-            elif guess[couleur] in code:
-                result+=['grey']
-        return result
+        def est_valide(proposition):
+             old_guess, old_feedback = historique[-1]
+             return matchcombi(proposition, old_guess) == old_feedback
+
+
+        essais = 0
+        while True:
+            color_pool_prio = []
+            color_pool = COLORS[:]
+            suggestion = []
+            curseur = 0
+
+            for case in feedback_labels[ligne_actuelle - 1]:
+                prev_color = attempts[ligne_actuelle - 1][curseur].cget('bg')
+
+                if case.cget("bg") == 'red':
+                    suggestion.append(prev_color)
+                elif case.cget("bg") == 'grey':
+                    color_pool_prio.append(prev_color)
+                    choix = rd.choice(color_pool_prio) if len(color_pool_prio) > 1 else rd.choice(color_pool)
+                    while choix == prev_color and len(color_pool_prio) > 1:
+                        choix = rd.choice(color_pool_prio)
+                    suggestion.append(choix)
+                else:
+                    if prev_color in color_pool:
+                        color_pool.remove(prev_color)
+                    if color_pool_prio:
+                        suggestion.append(rd.choice(color_pool_prio))
+                    else:
+                        suggestion.append(rd.choice(color_pool))
+                curseur += 1
+
+            essais += 1
+            if est_valide(suggestion):
+                break
+            if essais > 1000:
+                messagebox.showwarning("Aide impossible", "Impossible de générer une suggestion.")
+                return
+
+        selection_couleur.extend(suggestion)
+        update_color_display()
+
+
+    def matchcombi(guess, code_):
+        feedback = ['white'] * 4
+        code_copy = code_[:]
+        guess_copy = guess[:]
+
+    # Première passe : rouge (bien placé)
+        for i in range(4):
+            if guess[i] == code_[i]:
+                feedback[i] = 'red'
+                code_copy[i] = None
+                guess_copy[i] = None
+
+    # Deuxième passe : gris (mal placé)
+        for i in range(4):
+            if guess_copy[i] is not None and guess_copy[i] in code_copy:
+                feedback[i] = 'grey'
+                code_copy[code_copy.index(guess_copy[i])] = None
+
+        return feedback
+
+
+
+
+    def display_feedback(row, feedback):
+        # Met à jour la ligne 'row' avec les indices (feedback)
+        for i in range(4):
+            if i < len(feedback):
+                feedback_labels[row][i].config(bg=feedback[i])
+            else:
+                feedback_labels[row][i]
+   
+   
     # Affichage des 4 couleurs sélectionnées
     color_display = [tk.Label(entry_frame, bg="white", width=8, height=4, borderwidth=2, relief="solid") for _ in range(4)]
     for lbl in color_display:
@@ -147,6 +261,10 @@ def open_game(mode):
     # Bouton de validation
     btn_valider = tk.Button(entry_frame, text="Valider", command=validate_combination)
     btn_valider.pack(pady=10)
+    btn_undo=tk.Button(entry_frame, text="undo",command=undo)
+    btn_undo.pack(pady=10)
+    btn_help=tk.Button(entry_frame, text="help",command=help)
+    btn_help.pack(pady=10)
 
     # Bouton Retour Menu
     Button(game_window, text="Retour Menu", command=game_window.destroy).pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
