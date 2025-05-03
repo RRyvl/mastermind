@@ -112,7 +112,34 @@ def open_game(mode):
     selection_couleur = []
     ligne_actuelle = 0
     historique = []
+    historique_guess = []
+    save=[]
     
+    def sauvegarde():
+        nonlocal save, historique_guess, ligne_actuelle, feedback_labels
+        ligne_actuelle_copy=ligne_actuelle
+        save=[historique_guess.copy(),ligne_actuelle_copy, feedback_labels.copy()]
+    def load():
+        nonlocal ligne_actuelle, historique_guess, feedback_labels,save
+        if save == []:
+            pass
+        ligne_actuelle = save[1]
+        historique_guess = save[0]
+        for cellule in range(len(historique_guess)): 
+            row = cellule // 4
+            col = cellule % 4
+            attempts[row][col].config(bg=historique_guess[cellule])
+        for cellule in range(len(historique_guess), 40):
+            row = cellule // 4
+            col = cellule % 4
+            attempts[row][col].config(bg='white')
+        for i in range(10):
+            for j in range(4):
+                feedback_labels[i][j].config(bg=save[2][i][j].cget('bg'))
+                
+                
+            
+        
     def choisir_couleur(color):
         if len(selection_couleur) < 4:
             selection_couleur.append(color)
@@ -126,6 +153,7 @@ def open_game(mode):
     def validate_combination():
         nonlocal code
         nonlocal ligne_actuelle
+        nonlocal historique_guess
         
         if len(selection_couleur) != 4:
             messagebox.showerror("Erreur", "Veuillez sélectionner 4 couleurs")
@@ -134,11 +162,12 @@ def open_game(mode):
         # Affiche la combinaison dans la grille
         for i, color in enumerate(selection_couleur):
             attempts[ligne_actuelle][i].config(bg=color)
-
+        historique_guess+=[_ for _ in selection_couleur]
         # Récupère et affiche le feedback
         feedback = matchcombi(selection_couleur, code)
         display_feedback(ligne_actuelle, feedback)
         historique.append((selection_couleur.copy(), feedback))
+    
 
         if selection_couleur == code:
             messagebox.showinfo("Gagné", "Vous avez gagné")
@@ -265,6 +294,10 @@ def open_game(mode):
     btn_undo.pack(pady=10)
     btn_help=tk.Button(entry_frame, text="help",command=help)
     btn_help.pack(pady=10)
+    btn_save=tk.Button(entry_frame, text="save",command=sauvegarde)
+    btn_save.pack(pady=10)
+    btn_load=tk.Button(entry_frame, text="load",command=load)
+    btn_load.pack(pady=10)
 
     # Bouton Retour Menu
     Button(game_window, text="Retour Menu", command=game_window.destroy).pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
