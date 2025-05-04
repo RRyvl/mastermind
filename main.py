@@ -51,6 +51,27 @@ def open_page(title):
     new_window.title(title)
     new_window.geometry("800x600")
 
+        #Affichage des règles 
+    if title == "Règles":
+        regles_text = """ 
+        LES REGLES DU JEU 
+        L'objectif de ce jeu est de deviner la combinaison secrète composée de 4 couleurs. Chaque couleur est choisie parmi les 6 couleurs proposées 
+            : red, blue, yellow, green, orange et purple. Les doublons sont autorisés. 
+            A chaque tentative, vous obtenez un indice : 
+            - rouge indique que une couleur est bien placée
+            - blanc indique une couleur non existante
+            - gris indique une bonne couleur mais mal placée 
+            Vous avez 10 tentatives d'essais pour trouver la bonne combinaison. 
+
+            Quel que ce soit le mode choisi, agrandissez la fenêtre pour voir la totalité du contenu de la fenêtre. 
+
+            Pour le mode 2 joueurs, le joueur 1 doit entrer la combinaison secrète separees avec des espaces.  
+
+            Bonne chance. 
+        """
+        label = tk.Label(new_window, text=regles_text, wraplength=700, justify = "left")
+        label.pack(padx=20, pady=20)
+
     btn_return = Button(new_window, text="Retour Menu", command=new_window.destroy, height=2, width=10)
     btn_return.pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
 
