@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import Toplevel, Button, messagebox, Frame
 import random as rd 
-import json
 
 # Création de la fenêtre principale
 root = tk.Tk()
@@ -38,11 +37,12 @@ btn_quitter.pack(side=tk.LEFT, anchor="sw")
 btn_regles = tk.Button(bottom_frame, text="Règles", command=lambda: open_page("Règles"), height=2, width=10)
 btn_regles.pack(side=tk.RIGHT, anchor="se")
 
-# 1 joueur
-COLORS = ["red", "blue", "yellow", "green", "orange", "purple"]
-def gencode():
-    return [rd.choice(COLORS) for i in range(4)]
 
+#1 joueur
+
+COLORS = ["red", "blue", "yellow", "green", "orange", "purple"]
+def gencode ():
+    return [rd.choice(COLORS) for i in range (4)]
 code = gencode()
 
 def open_page(title):
@@ -113,55 +113,33 @@ def open_game(mode):
     ligne_actuelle = 0
     historique = []
     historique_guess = []
-    save = []
-
+    save=[]
+    
     def sauvegarde():
-        nonlocal code, save, historique_guess, ligne_actuelle, feedback_labels
-        ligne_actuelle_copy = ligne_actuelle
-        feedback_colors = [[cell.cget('bg') for cell in row] for row in feedback_labels]
-        save = [historique_guess.copy(), ligne_actuelle_copy, feedback_colors, code.copy()]
-        to_save = {
-            "historique_guess": historique_guess,
-            "ligne_actuelle": ligne_actuelle,
-            "feedback_colors": feedback_colors,
-            "code": code
-        }
-
-        with open("sauvegarde_mastermind.json", "w") as f:
-            json.dump(to_save, f)
-
-        messagebox.showinfo("Sauvegarde", "La partie a été sauvegardée avec succès.")
-
+        nonlocal save, historique_guess, ligne_actuelle, feedback_labels
+        ligne_actuelle_copy=ligne_actuelle
+        save=[historique_guess.copy(),ligne_actuelle_copy, feedback_labels.copy()]
     def load():
-        nonlocal code, ligne_actuelle, historique_guess, feedback_labels
-        try:
-            with open("sauvegarde_mastermind.json", "r") as f:
-                to_save = json.load(f)
-        except FileNotFoundError:
-            messagebox.showwarning("Erreur", "Aucune sauvegarde trouvée.")
-            return
-
-        historique_guess = to_save["historique_guess"]
-        ligne_actuelle = to_save["ligne_actuelle"]
-        feedback_colors = to_save["feedback_colors"]
-        code = to_save["code"]
-
-        for cellule in range(len(historique_guess)):
-            color = historique_guess[cellule]
+        nonlocal ligne_actuelle, historique_guess, feedback_labels,save
+        if save == []:
+            pass
+        ligne_actuelle = save[1]
+        historique_guess = save[0]
+        for cellule in range(len(historique_guess)): 
             row = cellule // 4
             col = cellule % 4
-            attempts[row][col].config(bg=color)
+            attempts[row][col].config(bg=historique_guess[cellule])
         for cellule in range(len(historique_guess), 40):
             row = cellule // 4
             col = cellule % 4
             attempts[row][col].config(bg='white')
-
         for i in range(10):
             for j in range(4):
-                feedback_labels[i][j].config(bg=feedback_colors[i][j])
-
-        messagebox.showinfo("La partie a été chargée ")
-
+                feedback_labels[i][j].config(bg=save[2][i][j].cget('bg'))
+                
+                
+            
+        
     def choisir_couleur(color):
         if len(selection_couleur) < 4:
             selection_couleur.append(color)
@@ -171,17 +149,21 @@ def open_game(mode):
         for i in range(4):
             color = selection_couleur[i] if i < len(selection_couleur) else "white"
             color_display[i].config(bg=color)
-
+    
     def validate_combination():
-        nonlocal code, ligne_actuelle, historique_guess
+        nonlocal code
+        nonlocal ligne_actuelle
+        nonlocal historique_guess
+        
         if len(selection_couleur) != 4:
             messagebox.showerror("Erreur", "Veuillez sélectionner 4 couleurs")
-            return
+            return  # On sort si la combinaison n'est pas complète
 
         # Affiche la combinaison dans la grille
         for i, color in enumerate(selection_couleur):
             attempts[ligne_actuelle][i].config(bg=color)
-        historique_guess += selection_couleur.copy()
+        historique_guess+=[_ for _ in selection_couleur]
+        # Récupère et affiche le feedback
         feedback = matchcombi(selection_couleur, code)
         display_feedback(ligne_actuelle, feedback)
         historique.append((selection_couleur.copy(), feedback))
@@ -189,7 +171,7 @@ def open_game(mode):
 
         if selection_couleur == code:
             messagebox.showinfo("Gagné", "Vous avez gagné")
-            quitter()
+            quitter()  # ou proposer une nouvelle partie
         elif ligne_actuelle + 1 == 10:
             messagebox.showwarning("Perdu", "Vous avez perdu")
             quitter()
@@ -201,24 +183,25 @@ def open_game(mode):
 
     def undo():
         nonlocal ligne_actuelle
-        if ligne_actuelle > 0:
-            ligne_actuelle -= 1
+        nonlocal attempts
+        if ligne_actuelle>=0:
+            ligne_actuelle-=1
             for cellule in attempts[ligne_actuelle]:
                 cellule.config(bg='white')
             for cellule in feedback_labels[ligne_actuelle]:
                 cellule.config(bg='white')
-
     def help():
-        nonlocal selection_couleur, code
+        nonlocal selection_couleur
+        nonlocal code
+
         if ligne_actuelle == 0:
             messagebox.showinfo("Info", "Faites une première tentative avant d'utiliser l'aide.")
             return
-
         selection_couleur.clear()
 
         def est_valide(proposition):
-            old_guess, old_feedback = historique[-1]
-            return matchcombi(proposition, old_guess) == old_feedback
+             old_guess, old_feedback = historique[-1]
+             return matchcombi(proposition, old_guess) == old_feedback
 
 
         essais = 0
@@ -252,7 +235,7 @@ def open_game(mode):
             if est_valide(suggestion):
                 break
             if essais > 1000:
-                messagebox.showwarning("Impossible de générer une suggestion.")
+                messagebox.showwarning("Aide impossible", "Impossible de générer une suggestion.")
                 return
 
         selection_couleur.extend(suggestion)
@@ -276,16 +259,22 @@ def open_game(mode):
             if guess_copy[i] is not None and guess_copy[i] in code_copy:
                 feedback[i] = 'grey'
                 code_copy[code_copy.index(guess_copy[i])] = None
+
         return feedback
 
 
 
 
     def display_feedback(row, feedback):
+        # Met à jour la ligne 'row' avec les indices (feedback)
         for i in range(4):
-            feedback_labels[row][i].config(bg=feedback[i])
-
-# Affichage des 4 couleurs sélectionnées
+            if i < len(feedback):
+                feedback_labels[row][i].config(bg=feedback[i])
+            else:
+                feedback_labels[row][i]
+   
+   
+    # Affichage des 4 couleurs sélectionnées
     color_display = [tk.Label(entry_frame, bg="white", width=8, height=4, borderwidth=2, relief="solid") for _ in range(4)]
     for lbl in color_display:
         lbl.pack(side=tk.LEFT, padx=5)
@@ -301,14 +290,22 @@ def open_game(mode):
     # Bouton de validation
     btn_valider = tk.Button(entry_frame, text="Valider", command=validate_combination)
     btn_valider.pack(pady=10)
-    btn_undo=tk.Button(entry_frame, text="Undo",command=undo)
+    btn_undo=tk.Button(entry_frame, text="undo",command=undo)
     btn_undo.pack(pady=10)
-    btn_help=tk.Button(entry_frame, text="Help",command=help)
+    btn_help=tk.Button(entry_frame, text="help",command=help)
     btn_help.pack(pady=10)
-    btn_save=tk.Button(entry_frame, text="Save",command=sauvegarde)
+    btn_save=tk.Button(entry_frame, text="save",command=sauvegarde)
     btn_save.pack(pady=10)
-    btn_load=tk.Button(entry_frame, text="Load",command=load)
+    btn_load=tk.Button(entry_frame, text="load",command=load)
     btn_load.pack(pady=10)
+
+    # Bouton Retour Menu
+    Button(game_window, text="Retour Menu", command=game_window.destroy).pack(side=tk.RIGHT, anchor="se", padx=20, pady=20)
+
+def quitter():
+    """Ferme l'application."""
+    root.destroy()
+
 
 # Lancement de l'application
 root.mainloop()
