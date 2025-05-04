@@ -115,6 +115,31 @@ def open_game(mode):
     historique_guess = []
     save = []
 
+        #Choix des deux modes
+    if mode == "1 Joueur":
+        code = [rd.choice(COLORS) for _ in range(4)]
+    elif mode == "2 Joueurs":
+        code = []
+        def valider_code_joueur1():
+            #Nonlocal signifie que nous voulons modifier la variable code de la fonction englobante open_game
+            nonlocal code
+            code_str = entry_code.get()
+            code_temp = code_str.lower().split()
+            if len(code_temp) != 4 or not all(c in COLORS for c in code_temp):
+                messagebox.showerror("Erreur", "Entrez 4 couleurs valides séparées par un espace.")
+                return
+            code = code_temp
+            top.destroy()
+        
+        top = Toplevel(root)
+        top.title("Joueur 1 : Entrez un code")
+        tk.Label(top, text="Entrez 4 couleurs parmi : " + ", ".join(COLORS)).pack(pady=10)
+        entry_code = tk.Entry(top)
+        entry_code.pack(pady=5)
+        tk.Button(top, text="Valider", command=valider_code_joueur1).pack(pady=10)
+        top.grab_set()
+        top.wait_window()
+
     def sauvegarde():
         nonlocal code, save, historique_guess, ligne_actuelle, feedback_labels
         ligne_actuelle_copy = ligne_actuelle
