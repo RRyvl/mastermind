@@ -1,7 +1,7 @@
-MI TD-01
-Ela 
-Romain 
-Aiswarya Collaty
+MI TD-01,
+Ela ,
+Romain, 
+Aiswarya Collaty,
                                         MASTERMIND 
 L’url : https://github.com/RRyvl/mastermind/blob/main/main.py
                  
